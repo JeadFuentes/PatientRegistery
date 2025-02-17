@@ -20,6 +20,7 @@ class Patient extends Model
         'barangay',
         'district',
         'zipcode',
+        'image',
         'status',
     ];
 

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('patients', function (Blueprint $table) {
             $table->id();
-            $table->string('hrn');;
+            $table->string('hrn');
             $table->string('lastname');
             $table->string('firstname');
             $table->string('middlename');
@@ -26,6 +26,7 @@ return new class extends Migration
             $table->string('barangay');
             $table->string('district');
             $table->integer('zipcode');
+            $table->string('image')->nullable();
             $table->string('status')->default('Active');
             $table->timestamps();
         });

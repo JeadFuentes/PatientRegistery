@@ -5,10 +5,13 @@ namespace App\Livewire;
 use Livewire\Component;
 use App\Models\Patient;
 use Livewire\WithPagination;
+use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Storage;
 
 class PatientRegistration extends Component
 {
     use WithPagination;
+    use WithFileUploads;
     public $id;
     public $hrn;
     public $lastname;
@@ -23,7 +26,11 @@ class PatientRegistration extends Component
     public $barangay;
     public $district;
     public $zipcode;
+    public $image;
     public $status;
+
+    public $imageplaceholder;
+    public $imageold;
 
     public $editPatients;
     public $deletePatients;
@@ -48,11 +55,18 @@ class PatientRegistration extends Component
             'barangay' => 'required|string',
             'district' => 'required|string',
             'zipcode' => 'required|numeric',
+            'image' => 'nullable|file|mimes:jpg,jpeg,png',
         ];
     }
 
     public function createPatient(){
         $this->validate();
+
+        if($this->image){
+            $filePath = $this->image->store('image', 'public');
+        } else {
+            $filePath = null;
+        }
 
         Patient::create([
             'hrn' => 'SC'.date("YmdHism"),
@@ -68,6 +82,7 @@ class PatientRegistration extends Component
             'barangay' => $this->barangay,
             'district' => $this->district,
             'zipcode' => $this->zipcode,
+            'image' => $filePath,
         ]);
 
         session()->flash('message', 'Patient Registered successfully.');
@@ -92,6 +107,8 @@ class PatientRegistration extends Component
         $this->barangay = $this->editPatients->barangay;
         $this->district = $this->editPatients->district;
         $this->zipcode = $this->editPatients->zipcode;
+        $this->image = $this->editPatients->image;
+        $this->imageold = $this->editPatients->image;
 
         $this->dispatch('open-modal',  name : 'Register' );
     }
@@ -112,6 +129,7 @@ class PatientRegistration extends Component
         $this->barangay = $this->viewPatients->barangay;
         $this->district = $this->viewPatients->district;
         $this->zipcode = $this->viewPatients->zipcode;
+        $this->image = $this->viewPatients->image;
 
         $this->dispatch('open-modal',  name : 'Register' );
     }
@@ -120,8 +138,37 @@ class PatientRegistration extends Component
         $editedPatient = Patient::find($this->id);
         $validated = $this->validate();
 
-        $editedPatient->fill($validated);
-        $editedPatient->save();
+        if ($this->imageplaceholder){
+
+            if($this->image){
+                Storage::disk('public')->delete($this->imageold);
+                $filePath = $this->image->store('image', 'public');
+            }
+            else{
+                $filePath = '';
+            }
+
+            $editedPatient->fill([
+                'hrn' => 'SC'.date("YmdHism"),
+                'lastname' => $this->lastname,
+                'firstname' => $this->firstname,
+                'middlename' => $this->middlename,
+                'dob' => $this->dob,
+                'civilstatus' => $this->civilstatus,
+                'sex' => $this->sex,
+                'contact' => $this->contact,
+                'street' => $this->street,
+                'citymun' => $this->citymun,
+                'barangay' => $this->barangay,
+                'district' => $this->district,
+                'zipcode' => $this->zipcode,
+                'image' => $filePath,
+            ]);
+            $editedPatient->save();
+        }else {
+            $editedPatient->fill($validated);
+            $editedPatient->save();
+        }
 
         session()->flash('message', 'Patient Edited successfully.');
         $this->redirect(route('dashboard'));
@@ -153,6 +200,8 @@ class PatientRegistration extends Component
     }
 
     public function closePatient(){
+        $this->imageplaceholder = null;
+        $this->image = null;
         $this->viewPatients = null;
         $this->editPatients = null;
         $this->deletePatients = null;

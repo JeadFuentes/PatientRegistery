@@ -69,6 +69,17 @@
       <x-slot:body>
           <form wire:submit.prevent="saveEditPatient">
               <div class="space-y-12">
+                <div class="col">
+                  @if ($this->imageplaceholder == "edit")
+                    @if ($this->image)
+                      <img class="rounded-lg size-20" src="{{$this->image->temporaryUrl()}}" alt="Photo">
+                    @endif
+                  @else
+                    <img class="rounded-lg size-20" src="{{$this->image}}" alt="Photo">
+                  @endif
+                  <input type="file" class="form-control pt-8" wire:model="image" id="image">
+                  @error('image') <span class="text-danger">{{ $message }}</span> @enderror
+                </div>
                 <div class="border-b border-gray-900/10 pb-12">
                   <label for="first-name" class="block text-sm/6 font-medium text-gray-900">Hospital Record Number</label>
                   <div class="mt-2 mb-5">
@@ -203,6 +214,7 @@
     <x-custom-modal name="Register" title="View Patient">
       <x-slot:body>
               <div class="space-y-12">
+                <img class="rounded-lg size-20" src="{{$this->image}}" alt="Photo">
                 <div class="border-b border-gray-900/10 pb-12">
                   <label for="first-name" class="block text-sm/6 font-medium text-gray-900">Hospital Record Number</label>
                   <div class="mt-2 mb-5">
@@ -339,6 +351,13 @@
       <x-slot:body>
           <form wire:submit.prevent="createPatient">
               <div class="space-y-12">
+                <div class="col">
+                    @if ($this->image)
+                      <img class="rounded-lg size-20" src="{{$this->image->temporaryUrl()}}" alt="Photo">
+                    @endif
+                    <input type="file" class="form-control pt-8" wire:model="image" id="image">
+                    @error('image') <span class="text-danger">{{ $message }}</span> @enderror
+                </div>
                 <div class="border-b border-gray-900/10 pb-12">
                   <label for="first-name" class="block text-sm/6 font-medium text-gray-900">Hospital Record Number</label>
                   <div class="mt-2 mb-5">
@@ -479,6 +498,9 @@
         @this.search = $(this).val();
         @this.call('perPages');
       })
+      $("#image").click(function(){
+        @this.imageplaceholder = "edit";
+      });
     });
 </script>
 @endscript
